@@ -1,21 +1,25 @@
 import 'package:animtrials/ui/widgets/tutorial_page.dart';
 import 'package:flutter/material.dart';
 
+const double radius = 80.0;
+const Color firstColor = Color.fromRGBO(41, 239, 162, 1);
+const Color secondColor = Colors.white;
+
 class CirclesPageView extends StatefulWidget {
   @override
   _CirclesPageViewState createState() => _CirclesPageViewState();
 }
 
 class _CirclesPageViewState extends State<CirclesPageView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   AnimationController _controller;
   Animation startAnimation;
   Animation endAnimation;
   Animation horizontalAnimation;
 
   PageController _pageController;
-  Color fgColor = Colors.indigo;
-  Color bgColor = Colors.white;
+  Color fgColor = firstColor;
+  Color bgColor = secondColor;
 
   int index = 0;
   bool isInHalfWay = false;
@@ -34,7 +38,7 @@ class _CirclesPageViewState extends State<CirclesPageView>
     );
     endAnimation = CurvedAnimation(
       parent: _controller,
-      curve: Interval(0.500, 1.000, curve: Curves.easeInExpo),
+      curve: Interval(0.500, 1.000, curve: Curves.easeOutExpo),
     );
     horizontalAnimation = CurvedAnimation(
       parent: _controller,
@@ -70,27 +74,27 @@ class _CirclesPageViewState extends State<CirclesPageView>
   goNext() {
     setState(() {
       isToggled = !isToggled;
-      index++;
-      if (index > 3) {
-        index = 0;
-      }
     });
-    _controller.forward(from: 0.0);
+    index++;
+    if (index >= 3) {
+      index = 0;
+    }
     _pageController.animateToPage(index,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOutQuad);
+    _controller.forward();
   }
 
   swapColors() {
     if (isToggled) {
       setState(() {
-        bgColor = Colors.white;
-        fgColor = Colors.indigo;
+        bgColor = firstColor;
+        fgColor = Colors.white;
       });
     } else {
       setState(() {
-        bgColor = Colors.indigo;
-        fgColor = Colors.white;
+        bgColor = Colors.white;
+        fgColor = firstColor;
       });
     }
   }
@@ -109,14 +113,18 @@ class _CirclesPageViewState extends State<CirclesPageView>
           Positioned(
             top: 0,
             bottom: 0,
-            left: width / 2 - 40,
+            left: width / 2 - (radius / 2),
             child: Container(
               color: isInHalfWay ? fgColor : bgColor,
-              width: width / 2 + 40,
+              width: width / 2 + (radius / 2),
             ),
           ),
-          Positioned(
-              bottom: 40,
+          Transform(
+              transform: Matrix4.identity()
+                ..translate(
+                  width / 2 - radius / 2.0,
+                  height - radius - 50,
+                ),
               child: GestureDetector(
                   onTap: () {
                     print("onTap");
@@ -130,17 +138,17 @@ class _CirclesPageViewState extends State<CirclesPageView>
                         animation: startAnimation,
                         color: fgColor,
                         iconColor: bgColor,
-                        tween: Tween<double>(begin: 1.0, end: 80.0),
+                        tween: Tween<double>(begin: 1.0, end: radius),
                         flip: 1.0,
                       ),
                       AnimatedCircle(
                         animation: endAnimation,
                         color: bgColor,
                         iconColor: fgColor,
-                        tween: Tween<double>(begin: 80.0, end: 1.0),
+                        tween: Tween<double>(begin: radius, end: 1.0),
                         flip: -1.0,
                         horizontalAnimation: horizontalAnimation,
-                        horizontalTween: Tween<double>(begin: 0, end: -80.0),
+                        horizontalTween: Tween<double>(begin: 0, end: -radius),
                       ),
                     ],
                   ))),
@@ -148,24 +156,31 @@ class _CirclesPageViewState extends State<CirclesPageView>
             top: 100,
             left: 0,
             right: 0,
-            bottom: 200,
+            bottom: 180,
             child: PageView(
               controller: _pageController,
               children: [
                 TutorialPage(
-                  title: "Local News\nStories",
-                  titleColor: fgColor,
-                  icon: Icons.add_road,
+                  title: "Otobüs beklemekten sıkıldınız mı?",
+                  titleColor: isInHalfWay ? bgColor : fgColor,
+                  assetName: "assets/images/bored_at_station_new.png",
                 ),
                 TutorialPage(
-                  title: "Drag and Drop\nto move",
-                  titleColor: bgColor,
-                  icon: Icons.smart_button,
+                  title:
+                      "Aracınızda \nsohbet edecek birileri olsun \nister miydiniz?",
+                  titleColor: isInHalfWay ? bgColor : fgColor,
+                  assetName: "assets/images/bored_at_car_new.png",
                 ),
                 TutorialPage(
-                  title: "Choose your interests",
-                  titleColor: fgColor,
-                  icon: Icons.star_outline,
+                  title:
+                      "Artık otostapp var!\nNereye gitmek istediğini seç.\nHepsi bu!",
+                  titleColor: isInHalfWay ? bgColor : fgColor,
+                  assetName: "assets/images/found_app.png",
+                ),
+                TutorialPage(
+                  title: "Güvenliğinizi önemsiyoruz!",
+                  titleColor: isInHalfWay ? bgColor : fgColor,
+                  assetName: "assets/images/care_about_security.png",
                 )
               ],
             ),
@@ -181,9 +196,9 @@ class AnimatedCircle extends AnimatedWidget {
   final Animation<double> horizontalAnimation;
   final Color color;
   final Color iconColor;
-  final Tween tween;
+  final Tween<double> tween;
   final double flip;
-  final Tween horizontalTween;
+  final Tween<double> horizontalTween;
 
   const AnimatedCircle(
       {Key key,
@@ -209,11 +224,13 @@ class AnimatedCircle extends AnimatedWidget {
               : horizontalTween.evaluate(horizontalAnimation)),
         child: Container(
           decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(
-                  80 / 2 - tween.evaluate(animation) / 40)),
-          width: 80,
-          height: 80,
+            color: color,
+            borderRadius: BorderRadius.circular(
+              radius / 2.0 - tween.evaluate(animation) / (radius / 2.0),
+            ),
+          ),
+          width: radius,
+          height: radius,
           child: Icon(
             flip == 1 ? Icons.navigate_next : Icons.navigate_before,
             size: 38,

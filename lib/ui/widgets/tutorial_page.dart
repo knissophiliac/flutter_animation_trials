@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class TutorialPage extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final String assetName;
   final Color titleColor;
 
-  const TutorialPage({Key key, this.title, this.icon, this.titleColor})
+  const TutorialPage({Key key, this.title, this.assetName, this.titleColor})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -16,23 +16,30 @@ class TutorialPage extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(width: 10, color: Colors.black26),
             borderRadius: BorderRadius.circular(48),
-            color: Colors.black12,
+            color: titleColor.withOpacity(0.3),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(
-              icon,
-              size: 180,
-              color: Colors.white,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(40),
+            child: Image.asset(
+              assetName,
+              width: 200,
+              height: 200,
+              fit: BoxFit.cover,
             ),
           ),
         ),
         SizedBox(height: 32),
-        Text(
-          title,
-          style: TextStyle(
-              color: titleColor, fontSize: 36, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 500),
+            style: TextStyle(
+                color: titleColor, fontSize: 24, fontWeight: FontWeight.bold),
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+            ),
+          ),
         )
       ],
     );
